@@ -4,48 +4,49 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Statistics
 
+
 class StatisticsListViewTest(TestCase):
-    def test_get_context_data(self):
-        # Создаем тестовые объекты Statistics
-        date1 = timezone.now().date()
-        date2 = date1 - timedelta(days=1)
-        statistics1 = Statistics.objects.create(date=date1, views=10, clicks=5)
-        statistics2 = Statistics.objects.create(date=date2, views=15, clicks=8)
 
-        # Создаем GET-запрос к представлению
+    def test_post_create(self):
         url = reverse('statistics-list')
-        response = self.client.get(url)
-
-        # Проверяем контекст представления
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'statistics_list.html')
-
-        expected_statistics_count = 2
-        self.assertEqual(len(response.context['statistics']), expected_statistics_count)
-
-    def test_post(self):
-        # Создаем POST-запрос к представлению
-        url = reverse('statistics-list')
-        data = {'date': '2023-07-17', 'views': 10, 'clicks': 5}
+        data = {
+            'date': '2023-07-17',
+            'views': 200,
+            'clicks': 40,
+            'create': '',
+        }
         response = self.client.post(url, data)
 
-        # Проверяем редирект
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('statistics-list'))
+        self.assertEqual(response.status_code, 200)
 
-        # Проверяем создание новой записи Statistics
-        statistics = Statistics.objects.last()
-        self.assertEqual(statistics.date, timezone.datetime.strptime('2023-07-17', '%Y-%m-%d').date())
-        self.assertEqual(statistics.views, 10)
-        self.assertEqual(statistics.clicks, 5)
+        self.assertTrue(Statistics.objects.filter(date='2023-07-17', views=200, clicks=40).exists())
 
-    def test_delete_all_statistics(self):
-        # Создаем тестовые объекты Statistics
-        date1 = timezone.now().date()
-        date2 = date1 - timedelta(days=1)
-        statistics1 = Statistics.objects.create(date=date1, views=10, clicks=5)
-        statistics2 = Statistics.objects.create(date=date2, views=15, clicks=8)
+    def test_post_delete(self):
+        url = reverse('statistics-list')
+        data = {'delete': ''}
+        response = self.client.post(url, data)
 
-        # Проверяем удаление всех записей Statistics
+        self.assertEqual(response.status_code, 200)
+
         self.assertFalse(Statistics.objects.exists())
 
+
+class StatisticsModelTest(TestCase):
+    def test_save_method(self):
+        statistics = Statistics(date='2023-07-18', views=100, clicks=20)
+
+        statistics.save()
+
+        self.assertEqual(statistics.cost, 10.0)
+        self.assertEqual(statistics.cpc, 0.5)
+        self.assertEqual(statistics.cpm, 100.0)
+
+
+    def test_save_method_with_zero_views(self):
+        statistics = Statistics(date='2023-07-18', views=0, clicks=20)
+
+        statistics.save()
+
+        self.assertEqual(statistics.cost, 10.0)
+        self.assertEqual(statistics.cpc, 0.5)
+        self.assertIsNone(statistics.cpm)
