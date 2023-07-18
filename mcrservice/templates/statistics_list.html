@@ -6,6 +6,14 @@
 <body>
     <h1>Statistics List</h1>
 
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <form method="get" action="{% url 'statistics-list' %}">
         <label for="from-date">From:</label>
         <input type="date" id="from-date" name="from" required>
@@ -27,14 +35,13 @@
         <label for="clicks">Clicks:</label>
         <input type="number" id="clicks" name="clicks" required>
         <br>
-        <button type="submit">Добавить статистику</button>
+        <button type="submit" name="create">Добавить статистику</button>
     </form>
 
     <form method="post" action="{% url 'statistics-list' %}">
-      {% csrf_token %}
-      <button type="submit">Удалить всю статистику</button>
+        {% csrf_token %}
+        <button type="submit" name="delete">Удалить всю статистику</button>
     </form>
-
 
     <table>
         <thead>
@@ -62,5 +69,3 @@
     </table>
 </body>
 </html>
-
-

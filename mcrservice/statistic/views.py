@@ -65,17 +65,17 @@ class StatisticsListView(TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        date = request.POST.get('date')
-        views = int(request.POST.get('views'))
-        clicks = int(request.POST.get('clicks'))
+        if 'create' in request.POST:
+            date = request.POST.get('date')
+            views = int(request.POST.get('views'))
+            clicks = int(request.POST.get('clicks'))
 
+            Statistics.objects.create(date=date, views=views, clicks=clicks)
 
-        Statistics.objects.create(date=date, views=views, clicks=clicks)
+            messages.success(request, 'Запись успешно создана.')
+            return self.get(request, *args, **kwargs)
 
-        return redirect('statistics-list')
-
-    def delete_all_statistics(request):
-        Statistics.objects.all().delete()
-        return redirect('statistics-list')
-
-
+        elif 'delete' in request.POST:
+            Statistics.objects.all().delete()
+            messages.success(request, 'Все записи успешно удалены.')
+            return self.get(request, *args, **kwargs)
