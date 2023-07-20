@@ -26,6 +26,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r mcrservice/requirements.txt
     - name: Run Tests
-      working-directory: Microservice-for-displaying-statistics/mcrservice
+      working-directory: mcrservice
       run: |
         python manage.py test
