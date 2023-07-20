@@ -3,7 +3,7 @@ from django.db import models
 
 class Statistics(models.Model):
     id = models.AutoField(primary_key=True)
-    date = models.DateField(unique=True)
+    date = models.DateField(unique=False)
     views = models.IntegerField(null=True, blank=True)
     clicks = models.IntegerField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.5)

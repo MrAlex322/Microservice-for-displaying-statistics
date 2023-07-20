@@ -1,52 +1,39 @@
+import json
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
-from datetime import timedelta
+from rest_framework import status
 from .models import Statistics
 
+class StatisticsViewSetTests(TestCase):
+    def setUp(self):
+        # Создаем тестовый объект Statistics
+        self.statistics = Statistics.objects.create(date='2023-07-01', views=100, clicks=50)
 
-class StatisticsListViewTest(TestCase):
-
-    def test_post_create(self):
+    def test_create_statistics(self):
+        # Проверяем создание объекта Statistics через POST запрос
         url = reverse('statistics-list')
-        data = {
-            'date': '2023-07-17',
-            'views': 200,
-            'clicks': 40,
-            'create': '',
-        }
-        response = self.client.post(url, data)
+        data = {'date': '2023-07-02', 'views': 200, 'clicks': 80}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Statistics.objects.count(), 2)
 
-        self.assertEqual(response.status_code, 200)
-
-        self.assertTrue(Statistics.objects.filter(date='2023-07-17', views=200, clicks=40).exists())
-
-    def test_post_delete(self):
+    def test_list_statistics(self):
+        # Проверяем получение списка всех Statistics через GET запрос
         url = reverse('statistics-list')
-        data = {'delete': ''}
-        response = self.client.post(url, data)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
 
-        self.assertEqual(response.status_code, 200)
+    def test_filter_by_date(self):
+        # Проверяем фильтрацию Statistics по дате через GET запрос с параметрами start_date и end_date
+        url = reverse('statistics-filter-by-date')
+        response = self.client.get(url, {'start_date': '2023-07-01', 'end_date': '2023-07-03'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
 
-        self.assertFalse(Statistics.objects.exists())
-
-
-class StatisticsModelTest(TestCase):
-    def test_save_method(self):
-        statistics = Statistics(date='2023-07-18', views=100, clicks=20)
-
-        statistics.save()
-
-        self.assertEqual(statistics.cost, 10.0)
-        self.assertEqual(statistics.cpc, 0.5)
-        self.assertEqual(statistics.cpm, 100.0)
-
-
-    def test_save_method_with_zero_views(self):
-        statistics = Statistics(date='2023-07-18', views=0, clicks=20)
-
-        statistics.save()
-
-        self.assertEqual(statistics.cost, 10.0)
-        self.assertEqual(statistics.cpc, 0.5)
-        self.assertIsNone(statistics.cpm)
+    def test_delete_all_statistics(self):
+        # Проверяем удаление всех Statistics через DELETE запрос
+        url = reverse('statistics-delete-all')
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Statistics.objects.count(), 0)

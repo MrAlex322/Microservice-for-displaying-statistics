@@ -17,14 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from statistic.views import StatisticsListView
-from statistic.views import StatisticsListView
+from rest_framework.routers import DefaultRouter
+from statistic.views import StatisticsViewSet
 
-# router = routers.DefaultRouter()
-# router.register(r'statistics', StatisticsViewSet, basename='statistics')
+router = DefaultRouter()
+router.register(r'statistics', StatisticsViewSet, basename='statistics')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('statistics/', StatisticsListView.as_view(), name='statistics-list'),
-    # path('', include(router.urls)),
+    path('', include(router.urls)),
 ]
